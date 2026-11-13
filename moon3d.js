@@ -38,12 +38,91 @@ export function makeMoon(canvas,overlay,textureURL,siteClicked){
   function buffer(data,attr,size){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW);const loc=gl.getAttribLocation(p,attr);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,0,0);}
   buffer(geo.pos,'aPosition',3);buffer(geo.norm,'aNormal',3);buffer(geo.uv,'aUV',2);
   const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW);
-  const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([138,145,152,255]));
-  const im=new Image();im.onload=()=>{gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);gl.generateMipmap(gl.TEXTURE_2D);draw();};im.src=textureURL;
+  // WebGL 1 requires CLAMP_TO_EDGE + non-mipmapped filtering for NPOT textures.
+  // Our lunar texture is 1600 x 800 (not powers of two). Without these parameters,
+  // the sampler is incomplete and the globe appears as a black circle.
+  const tex=gl.createTexture();
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([149,154,162,255]));
+  const im=new Image();
+  im.onload=()=>{
+    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);
+    // Use mipmaps only if the uploaded texture has power-of-two dimensions.
+    const pot=n=>n>0&&(n&(n-1))===0;
+    if(pot(im.naturalWidth)&&pot(im.naturalHeight)){
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+      gl.generateMipmap(gl.TEXTURE_2D);
+    }
+    draw();
+  };
+  im.onerror=()=>{console.warn('LUNARIS: lunar texture failed to load; using the gray fallback.');draw();};
+  im.src=textureURL;
   gl.uniform1i(gl.getUniformLocation(p,'uTexture'),0);
   gl.uniform3f(gl.getUniformLocation(p,'uLight'),-.65,.4,1.2);
-  var drawGl=()=>{gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);gl.useProgram(p);gl.uniformMatrix4fv(gl.getUniformLocation(p,'uTransform'),false,rotation(pitch,yaw));gl.uniform1f(gl.getUniformLocation(p,'uZoom'),zoom);gl.uniform2f(gl.getUniformLocation(p,'uAspect'),Math.min(1,canvas.height/canvas.width),Math.min(1,canvas.width/canvas.height));gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_SHORT,0);};
- } else {var drawGl=()=>{};canvas.style.background='none'; canvas.classList.add('globe-no-webgl');}
+  var drawGl=()=>{gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);gl.useProgram(p);gl.uniformMatrix4fv(gl.getUniformLocation(p,'uTransform'),false,rotation(pitch,yaw));gl.uniform1f(gl.getUniformLocation(p,'uZoom'),zoom);gl.uniform2f(gl.getUniformLocation(p,'uAspect'),Math.min(1,canvas.height/canvas.width),Math.min(1,canvas.width/canvas.height));gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_SHORT,0);};
+ } else {
+  // Software-rendered, draggable 3D Moon for browsers/devices where WebGL is disabled.
+  // This is still a genuine sphere projection with latitude/longitude texture lookup,
+  // directional lighting and the same interactive pitch/yaw/zoom as the GPU renderer.
+  const surface=canvas.getContext('2d',{alpha:true});
+  let texture=null, texW=0, texH=0;
+  const image=new Image();
+  image.onload=()=>{
+   try{
+    const temp=document.createElement('canvas');temp.width=image.naturalWidth;temp.height=image.naturalHeight;
+    const t=temp.getContext('2d',{willReadFrequently:true});t.drawImage(image,0,0);
+    texture=t.getImageData(0,0,temp.width,temp.height).data;texW=temp.width;texH=temp.height;
+   }catch(err){console.warn('LUNARIS: software texture unavailable',err)}
+   draw();
+  };
+  image.onerror=()=>console.warn('LUNARIS: moon texture could not be loaded');
+  image.src=textureURL;
+  var drawGl=()=>{
+   const w=canvas.width,h=canvas.height,dim=Math.min(w,h),cx=w/2,cy=h/2,r=dim*zoom/2;
+   if(!w||!h||!r)return;
+   surface.clearRect(0,0,w,h);
+   if(!texture){
+    // Shaded fallback even before the image finishes decoding.
+    const gr=surface.createRadialGradient(cx-r*.3,cy-r*.32,r*.04,cx,cy,r);
+    gr.addColorStop(0,'#a0a7ab');gr.addColorStop(.6,'#5b646c');gr.addColorStop(1,'#181e27');
+    surface.fillStyle=gr;surface.beginPath();surface.arc(cx,cy,r,0,Math.PI*2);surface.fill();
+    return;
+   }
+   const pixels=surface.createImageData(w,h),data=pixels.data;
+   const a=Math.cos(pitch),b=Math.sin(pitch),c=Math.cos(yaw),d=Math.sin(yaw);
+   const x0=Math.max(0,Math.floor(cx-r-1)),x1=Math.min(w,Math.ceil(cx+r+1));
+   const y0=Math.max(0,Math.floor(cy-r-1)),y1=Math.min(h,Math.ceil(cy+r+1));
+   for(let y=y0;y<y1;y++){
+    const ny=(cy-(y+.5))/r;
+    for(let x=x0;x<x1;x++){
+     const nx=((x+.5)-cx)/r, distance=nx*nx+ny*ny;
+     if(distance>1)continue;
+     const nz=Math.sqrt(1-distance);
+     // Inverse transform: view-space normal back into the Moon's texture frame.
+     const px=c*nx-d*nz,py=ny,pz=d*nx+c*nz;
+     const qx=px,qy=a*py+b*pz,qz=-b*py+a*pz;
+     const lon=Math.atan2(qx,qz),lat=Math.asin(Math.max(-1,Math.min(1,qy)));
+     const tx=Math.min(texW-1,Math.max(0,Math.floor((lon/(2*Math.PI)+.5)*texW)));
+     const ty=Math.min(texH-1,Math.max(0,Math.floor((.5-lat/Math.PI)*texH)));
+     const k=(ty*texW+tx)*4,j=(y*w+x)*4;
+     const light=Math.max(0,(-.65*nx+.4*ny+1.2*nz)/Math.hypot(-.65,.4,1.2));
+     const intensity=.20+.86*light;
+     const rim=Math.pow(1-nz,2.2)*14;
+     data[j]=Math.min(255,texture[k]*intensity+rim);
+     data[j+1]=Math.min(255,texture[k+1]*intensity+rim);
+     data[j+2]=Math.min(255,texture[k+2]*intensity+rim);
+     data[j+3]=Math.round(255*Math.min(1,Math.max(0,(1-distance)*90)));
+    }
+   }
+   surface.putImageData(pixels,0,0);
+  };
+ }
  function point(lat,lon){const a=lat*Math.PI/180,b=lon*Math.PI/180;return [Math.cos(a)*Math.sin(b),Math.sin(a),Math.cos(a)*Math.cos(b)];}
  let locs=[];
  function drawOverlay(){const w=overlay.width,h=overlay.height,dim=Math.min(w,h);ctx.clearRect(0,0,w,h);ctx.save();ctx.translate(w/2,h/2);ctx.strokeStyle='rgba(113,183,222,.17)';ctx.lineWidth=1;
