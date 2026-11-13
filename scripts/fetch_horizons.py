@@ -25,12 +25,14 @@ HERE = Path(__file__).resolve().parent.parent
 DEST = HERE / 'data' / 'horizons-catalog.json'
 API = 'https://ssd.jpl.nasa.gov/api/horizons.api'
 SITES = {
-    'south-pole': (0.0,-89.50),
-    'polar-ridge': (35.0,-88.80),
-    'polar-basin': (95.0,-88.40),
-    'polar-plateau': (140.0,-87.80),
-    'apollo-11': (23.4729,0.6741),
-    'apollo-17': (30.7717,20.1908),
+    'south-pole': (0.0,-89.50), 'polar-ridge': (35.0,-88.80),
+    'polar-basin': (95.0,-88.40), 'polar-plateau': (140.0,-87.80),
+    'chandrayaan3': (32.319,-69.373), 'im1': (1.44,-80.13),
+    'apollo-11': (23.47314,0.67416), 'apollo-12': (-23.4219,-3.0128),
+    'apollo-14': (-17.47194,-3.64589), 'apollo-15': (3.6333,26.13239),
+    'apollo-16': (15.5011,-8.9734), 'apollo-17': (30.7723,20.1911),
+    'change3': (-19.5116,44.1214), 'change4': (177.599,-45.444),
+    'change5': (-51.9161,43.0576), 'change6': (-153.9852,-41.6385),
 }
 FLOAT = re.compile(r'^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$')
 
@@ -128,7 +130,7 @@ if __name__=='__main__':
     parser.add_argument('--days',type=int,default=75)
     parser.add_argument('--step-hours',type=int,default=3,choices=(1,2,3,4,6,8,12))
     parser.add_argument('--delay',type=float,default=1.5,help='Delay in seconds between sequential API requests')
-    parser.add_argument('--sites',nargs='+',choices=list(SITES),default=list(SITES))
+    parser.add_argument('--sites',nargs='+',choices=list(SITES),default=['south-pole','chandrayaan3','apollo-11','change6'])
     args=parser.parse_args()
     if not 1<=args.days<=365:raise SystemExit('--days must be between 1 and 365')
     generate(args)

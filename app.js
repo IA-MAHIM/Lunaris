@@ -3,7 +3,7 @@ import { makeMoon } from './moon3d.js';
 
 const $ = id => document.getElementById(id);
 const app = {
-  sites:[...SITES], selected:SITES[0], secondary:SITES[1],
+  sites:[...SITES], selected:SITES[0], secondary:SITES[1], comparisons:[],
   start:'2026-11-13', compareStart:'2026-11-20', duration:5,
   terrain:false, catalog:null, plan:null, comparison:null,
   power:{solar:3500,load:65,battery:6000}, index:0, timer:null,
@@ -19,8 +19,9 @@ const full = (v)=>Number(v).toFixed(1);
 function clock(){const d=new Date();$('clock').textContent=`UTC ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;}
 function renderSites(){
  const options=app.sites.map(s=>`<option value="${escapeHTML(s.id)}">${escapeHTML(s.name)} · ${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°</option>`).join('');
- $('siteSelect').innerHTML=options;$('compareSite').innerHTML=options;
- $('siteSelect').value=app.selected.id;$('compareSite').value=app.secondary.id;
+ $('siteSelect').innerHTML=options;
+ $('siteSelect').value=app.selected.id;
+ for(let i=2;i<=4;i++){const node=$('compareSite'+i);if(node){node.innerHTML=options;node.value=(app.sites[[2,4,9][i-2]]||app.sites[0]).id;}}
  app.moon?.setSites(app.sites);app.moon?.select(app.selected);
 }
 function setSite(id){
@@ -60,13 +61,18 @@ function analyze(showToast=false){
  if(!app.plan?.samples?.length)return;
  app.index=0;
  renderSummary();renderTimeline();renderChart();renderPlayback();renderCompare();
- if(showToast)toast(`Mission analyzed: ${app.selected.name} • ${duration} days.`);
+ if(showToast){toast(`Mission analyzed: ${app.selected.name} • ${duration} days.`);navigate('analysis');}
 }
 function renderSummary(){
  const p=app.plan, s=app.selected;
  $('metricLat').textContent=`${Math.abs(s.lat).toFixed(2)}° ${s.lat<0?'S':'N'}`;
  $('metricSun').textContent=p.sunPct+'%';$('metricEarth').textContent=p.earthPct+'%';$('metricScore').textContent=p.score+'/100';
  ephemerisStatus(p);
+ if($('analysisScenario'))$('analysisScenario').textContent=`${s.name} · ${app.start} · ${p.durationDays} days`;
+ if($('analysisMode'))$('analysisMode').textContent=p.coverage===1?'JPL Horizons cache':p.coverage>0?'Mixed JPL data / estimate':'Analytical estimate (not JPL-validated)';
+ if($('reportSummary'))$('reportSummary').textContent=`${s.name} • ${Math.abs(s.lat).toFixed(3)}° ${s.lat<0?'S':'N'}, ${Math.abs(s.lon).toFixed(3)}° ${s.lon<0?'W':'E'} • ${app.start} • ${p.durationDays} Earth days`;
+ for(const [id,v] of [['reportSun',p.sunPct+'%'],['reportEarth',p.earthPct+'%'],['reportOverlap',p.overlapPct+'%'],['reportScore',p.score+'/100']])if($(id))$(id).textContent=v;
+ if($('reportSource'))$('reportSource').textContent=p.coverage===1?'JPL Horizons cached ephemerides · power/terrain estimates remain simplified':p.coverage>0?'Mixed Horizons/estimated geometry; check timestamp coverage':'Analytical estimate; NOT verified NASA calculations';
 }
 function renderSky(state){
  const cx=180,cy=149,r=108;
@@ -145,13 +151,20 @@ function scenarioCard(p,label,winning){
  return `<div class="scenario-card ${winning?'best':''}"><div class="scenario-caption"><span>${label}</span><strong>${winning?'◎ HIGHER HEURISTIC SCORE':'MISSION SCENARIO'}</strong></div><h3>${escapeHTML(p.site.name)}</h3><p>${escapeHTML(formatUTC(p.start,{hour:undefined,minute:undefined}).replace(' UTC',''))} · ${p.durationDays} Earth days · ${p.site.lat.toFixed(2)}°, ${p.site.lon.toFixed(2)}°</p><div class="scenario-metrics"><div><span>SUNLIT</span><b>${p.sunPct}%</b></div><div><span>EARTH LINK</span><b>${p.earthPct}%</b></div><div><span>OVERLAP</span><b>${p.overlapPct}%</b></div></div><div class="scenario-bottom"><span>LONGEST EARTH BLACKOUT<br/><b>${p.maxComm} h</b></span><span>WINDOW INDEX <b>${p.score}/100</b></span></div></div>`;
 }
 function renderCompare(){
- const secondaryId=$('compareSite').value, start=$('compareDate').value;
- const site=app.sites.find(s=>s.id===secondaryId)||app.sites[1];
- app.secondary=site;app.compareStart=start;
- app.comparison=buildTimeline(site,dateTimeFromDay(start),app.duration,app.catalog,app.terrain,3,app.power);
- const p=app.plan,q=app.comparison;
- $('compareCards').innerHTML=scenarioCard(p,'SCENARIO A · CURRENT',p.score>q.score)+scenarioCard(q,'SCENARIO B · ALTERNATE',q.score>p.score);
+ if(!app.plan)return;
+ const scenarios=[app.plan];
+ for(let i=2;i<=4;i++){
+   const sel=$('compareSite'+i), date=$('compareDate'+i);
+   const site=app.sites.find(s=>s.id===sel.value)||app.sites[i];
+   const start=date.value||app.start;
+   const plan=buildTimeline(site,dateTimeFromDay(start),app.duration,app.catalog,app.terrain,3,app.power);
+   scenarios.push(plan);
+ }
+ app.comparisons=scenarios;
+ const top=Math.max(...scenarios.map(p=>p.score));
+ $('compareCards').innerHTML=scenarios.map((p,i)=>scenarioCard(p,`SCENARIO ${'ABCD'[i]} · ${i?'ALTERNATIVE':'YOUR PLAN'}`,p.score===top)).join('');
 }
+
 function runOptimize(){
  const start=dateTimeFromDay(app.start),span=Number($('searchDays').value);
  $('optimizerResults').innerHTML='<div class="empty-state">Analyzing candidate starts…</div>';
@@ -159,16 +172,37 @@ function runOptimize(){
  requestAnimationFrame(()=>setTimeout(()=>{
  const best=optimize(app.selected,start,span,app.duration,app.catalog,app.terrain,app.power);
  $('optimizerResults').innerHTML=best.map((p,i)=>`<div class="result-row"><span class="rank">#${i+1}</span><div class="result-date"><b>${escapeHTML(p.date.toISOString().slice(0,10))}</b><small>${p.durationDays}-day window · UTC</small></div><div class="result-kpi"><span>SUNLIT</span><b>${p.sunPct}%</b></div><div class="result-kpi"><span>EARTH</span><b>${p.earthPct}%</b></div><div class="result-kpi"><span>INDEX</span><b>${p.score}/100</b></div><button class="btn btn-outline" data-date="${p.date.toISOString().slice(0,10)}">Use this date →</button></div>`).join('')+`<p style="font-size:10px;color:#7891a4;line-height:1.5;padding-top:8px">Scanned in 2-day increments. Rankings apply only to the chosen exploratory models and available dataset coverage. The index is not a NASA mission feasibility rating.</p>`;
- $('optimizerResults').querySelectorAll('button[data-date]').forEach(b=>b.addEventListener('click',()=>{$('dateInput').value=b.dataset.date;analyze(true);location.hash='#analysis';}));
+ $('optimizerResults').querySelectorAll('button[data-date]').forEach(b=>b.addEventListener('click',()=>{$('dateInput').value=b.dataset.date;analyze(true);navigate('analysis');}));
  toast('Mission opportunity search completed.');
  },10));
 }
 function reportMarkdown(){
  const p=app.plan, s=app.selected;
  const source=p.coverage===1?'Cached JPL Horizons':p.coverage>0?'Mixed cached JPL and analytical estimate':'First-order analytical approximation';
- return `# LUNARIS — Lunar Mission Window Report\n\nGenerated: ${new Date().toISOString()}\nTeam: CodexGalaxy / IUBAT / NASA Space Apps Challenge 2026\n\n## Scenario\n- Site: ${s.name} (${s.type})\n- Latitude: ${s.lat.toFixed(5)}°\n- East longitude: ${s.lon.toFixed(5)}°\n- Start: ${p.start.toISOString()}\n- Duration: ${p.durationDays} Earth days\n- Synthetic terrain horizon enabled: ${app.terrain?'YES (not LOLA)':'NO'}\n\n## Indicators\n- Time with Sun above modeled horizon: ${p.sunPct}%\n- Time with Earth center above modeled horizon: ${p.earthPct}%\n- Time with both: ${p.overlapPct}%\n- Longest darkness within sampled window: ${p.maxDark} hours\n- Longest direct-Earth blackout within sampled window: ${p.maxComm} hours\n- Exploratory score (not flight validation): ${p.score}/100\n- Minimum modeled battery level: ${p.minBattery}%\n- Battery capacity: ${p.power.battery} Wh; panel ${p.power.solar} W; load ${p.power.load} W\n\n## Scientific provenance and limitations\n- Geometry source: ${source} (${(p.coverage*100).toFixed(1)}% JPL timestamp coverage)\n- Without imported ephemerides, values are approximate, not JPL-validated.\n- The terrain model is flat/zero horizon unless the educational synthetic obstruction toggle is enabled. No measured LOLA/DEM elevation is used.\n- The battery model assumes a fixed horizontal panel and simplified energy balance, ignoring temperature, shadows beyond the chosen horizon model, efficiency, electrical limits, thermal conditions, and antenna constraints.\n- Visibility uses Earth-center elevation; real links require a complete radio budget and terrain analysis.\n- This work is an educational demonstration, not for actual spacecraft planning.\n\n## References\n- NASA Space Apps Challenge: https://www.spaceappschallenge.org/2026/challenges/lunar-landing-site-navigator/\n- JPL Horizons: https://ssd.jpl.nasa.gov/horizons/\n- LRO LOLA: https://pds-geosciences.wustl.edu/missions/lro/lola.htm\n`;
+ return `# LUNARIS — Lunar Mission Window Report\n\nGenerated: ${new Date().toISOString()}\nTeam: CodexGalaxy / IUBAT / NASA Space Apps Challenge 2026\n\n## Scenario\n- Site: ${s.name} (${s.type})\n- Latitude: ${s.lat.toFixed(5)}°\n- East longitude: ${s.lon.toFixed(5)}°\n- Start: ${p.start.toISOString()}\n- Duration: ${p.durationDays} Earth days\n- Synthetic terrain horizon enabled: ${app.terrain?'YES (not LOLA)':'NO'}\n\n## Indicators\n- Time with Sun above modeled horizon: ${p.sunPct}%\n- Time with Earth center above modeled horizon: ${p.earthPct}%\n- Time with both: ${p.overlapPct}%\n- Longest darkness within sampled window: ${p.maxDark} hours\n- Longest direct-Earth blackout within sampled window: ${p.maxComm} hours\n- Exploratory score (not flight validation): ${p.score}/100\n- Minimum modeled battery level: ${p.minBattery}%\n- Battery capacity: ${p.power.battery} Wh; panel ${p.power.solar} W; load ${p.power.load} W\n\n## Scientific provenance and limitations\n- Geometry source: ${source} (${(p.coverage*100).toFixed(1)}% JPL timestamp coverage)\n- Without imported ephemerides, values are approximate, not JPL-validated.\n- The terrain model is flat/zero horizon unless the educational synthetic obstruction toggle is enabled. No measured LOLA/DEM elevation is used.\n- The battery model assumes a fixed horizontal panel and simplified energy balance, ignoring temperature, shadows beyond the chosen horizon model, efficiency, electrical limits, thermal conditions, and antenna constraints.\n- Visibility uses Earth-center elevation; real links require a complete radio budget and terrain analysis.\n- This work is an educational demonstration, not for actual spacecraft planning.\n\n## References\n- NASA Space Apps Challenge: https://www.spaceappschallenge.org/2026/challenges/lunar-landing-site-navigator/\n- JPL Horizons: https://ssd.jpl.nasa.gov/horizons/\n- LRO LOLA: https://pds-geosciences.wustl.edu/missions/lro/lola.htm\n- LROC Quickmap: https://quickmap.lroc.asu.edu/\n- NASA Moon Trek: https://trek.nasa.gov/moon/\n- Canadian Space Agency Moon Exploration: https://www.asc-csa.gc.ca/eng/astronomy/moon-exploration/\n- Apollo reference coordinates: https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html\n\n## Four scenario comparison\n${(app.comparisons.length?app.comparisons:[p]).map((c,i)=>`- ${'ABCD'[i]}: ${c.site.name}, ${c.start.toISOString().slice(0,10)}, Sun ${c.sunPct}%, Earth ${c.earthPct}%, both ${c.overlapPct}%, blackout ${c.maxComm}h, index ${c.score}/100`).join('\n')}\n`;
 }
 function downloadReport(){const blob=new Blob([reportMarkdown()],{type:'text/markdown;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`LUNARIS_report_${app.selected.id}_${app.start}.md`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);toast('Mission report downloaded.');}
+function downloadCSV(){
+ if(!app.plan?.samples?.length){toast('Analyze a mission first.');return;}
+ const rows=[['timestamp_utc','hours_from_start','sun_azimuth_deg','sun_elevation_deg','sun_visible','earth_azimuth_deg','earth_elevation_deg','earth_visible','overlap','battery_percent','geometry_source']];
+ for(const s of app.plan.samples){rows.push([s.date.toISOString(),s.hour,s.sun.az.toFixed(5),s.sun.elev.toFixed(5),s.sun.visible,s.earth.az.toFixed(5),s.earth.elev.toFixed(5),s.earth.visible,s.overlap,s.battery.toFixed(1),s.source]);}
+ const blob=new Blob([rows.map(a=>a.join(',')).join('\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob);
+ const link=document.createElement('a');link.href=url;link.download=`LUNARIS_timeline_${app.selected.id}_${app.start}.csv`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);toast('Mission timeline CSV downloaded.');
+}
+const PAGES=['overview','planner','analysis','comparison','methods','report'];
+function navigate(where){
+ const id=PAGES.includes(where)?where:'overview';
+ if(id==='analysis'&&!app.plan){toast('Please configure your mission first.');return navigate('planner');}
+ if(id==='comparison'&&app.plan)renderCompare();
+ if(id==='report'&&app.plan)renderSummary();
+ for(const x of PAGES){const el=$(x);if(el){el.classList.toggle('is-active',x===id);el.hidden=x!==id;}}
+ document.querySelectorAll('.nav-link').forEach(a=>{const selected=a.getAttribute('href')==='#'+id;a.classList.toggle('active',selected);if(selected)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+ document.body.setAttribute('data-view',id);
+ if(location.hash!=='#'+id)history.pushState(null,'','#'+id);
+ window.scrollTo({top:0,behavior:'instant'});
+ if(id==='planner')requestAnimationFrame(()=>setTimeout(()=>app.moon?.resize(),75));
+}
+function handleRoute(){navigate(location.hash.slice(1)||'overview');}
 function validateCatalog(obj){
  if(!obj||obj.schema!=='lunaris-horizons-v1'||!obj.series||typeof obj.series!=='object')throw Error('Expected LUNARIS Horizons v1 JSON.');
  for(const [id,arr] of Object.entries(obj.series)){
@@ -199,18 +233,23 @@ function bind(){
  $('terrainToggle').addEventListener('change',()=>{analyze();toast(app.terrain?'Illustrative synthetic terrain is active. This is not LOLA data.':'Using a zero-degree spherical horizon.');});
  $('timeSlider').addEventListener('input',e=>{app.index=Number(e.target.value);renderPlayback()});
  $('playBtn').addEventListener('click',playback);
- $('compareBtn').addEventListener('click',()=>{renderCompare();toast('Side-by-side comparison updated.')});
+ $('compareBtn').addEventListener('click',()=>{renderCompare();toast('Four-scenario comparison updated.')});
+ $('compareFromAnalysis').addEventListener('click',()=>navigate('comparison'));
  $('optimizeBtn').addEventListener('click',runOptimize);
  $('exportBtn').addEventListener('click',downloadReport);
+ $('exportCSV').addEventListener('click',downloadCSV);
+ $('printBtn').addEventListener('click',()=>window.print());
  $('jplImport').addEventListener('change',importCatalog);
  const bindPower=(id,k,label)=>$(id).addEventListener('input',e=>{app.power[k]=Number(e.target.value);$(label).textContent=app.power[k]+' '+(k==='battery'?'Wh':'W');analyze(false)});
  bindPower('solarInput','solar','solarLabel');bindPower('loadInput','load','loadLabel');bindPower('capacityInput','battery','capacityLabel');
- for(const a of document.querySelectorAll('.nav-link'))a.addEventListener('click',()=>{document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));a.classList.add('active')});
+ document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const dest=a.getAttribute('href').slice(1);if(PAGES.includes(dest)){e.preventDefault();navigate(dest);}}));
+ window.addEventListener('hashchange',handleRoute);
+ window.addEventListener('popstate',handleRoute);
 }
 function main(){
  clock();setInterval(clock,1000);
  app.moon=makeMoon($('moonCanvas'),$('moonOverlay'),'assets/moon-texture.jpg',(id)=>{setSite(id);toast(`Selected ${app.selected.name} from the interactive Moon.`)});
- renderSites();bind();setSite('south-pole');app.moon.focus();loadCatalog();
+ renderSites();bind();setSite('south-pole');app.moon.focus();handleRoute();loadCatalog();
  // Explicitly note which parts are illustrative in our output and open-data citations.
  console.info('LUNARIS 2026: offline analytic estimation enabled. Use scripts/fetch_horizons.py for cached NASA/JPL results.');
 }

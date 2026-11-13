@@ -15,12 +15,22 @@ const sin = (x) => Math.sin(x * RAD);
 const cos = (x) => Math.cos(x * RAD);
 
 export const SITES = [
-  { id: 'south-pole', name: 'South Pole Reference', region: 'South polar region', lat: -89.50, lon: 0.0, type: 'Reference coordinate', description: 'Near-pole reference point, not a certified landing site.' },
-  { id: 'polar-ridge', name: 'Polar Ridge A', region: 'South polar region', lat: -88.80, lon: 35.0, type: 'Hypothetical site', description: 'Illustrative alternate site for date and longitude sensitivity.' },
-  { id: 'polar-basin', name: 'Polar Basin B', region: 'South polar region', lat: -88.40, lon: 95.0, type: 'Hypothetical site', description: 'Illustrative candidate; not mapped to an actual measured crater.' },
-  { id: 'polar-plateau', name: 'Polar Plateau C', region: 'South polar region', lat: -87.80, lon: 140.0, type: 'Hypothetical site', description: 'Illustrative south-polar comparison coordinate.' },
-  { id: 'apollo-11', name: 'Apollo 11', region: 'Mare Tranquillitatis', lat: 0.6741, lon: 23.4729, type: 'Historic reference', description: 'Approximate historical Apollo 11 landing coordinates.' },
-  { id: 'apollo-17', name: 'Apollo 17', region: 'Taurus–Littrow', lat: 20.1908, lon: 30.7717, type: 'Historic reference', description: 'Approximate historical Apollo 17 landing coordinates.' },
+  {id:'south-pole',name:'South Pole Reference',region:'Lunar south pole',lat:-89.5,lon:0,type:'Reference coordinate',description:'Near-polar reference coordinate; not a certified landing site.'},
+  {id:'polar-ridge',name:'Polar Ridge A (concept)',region:'Lunar south pole',lat:-88.8,lon:35,type:'Hypothetical coordinate',description:'Illustrative candidate for comparing south-polar sun angles; not a mapped or certified landing site.'},
+  {id:'polar-basin',name:'Polar Basin B (concept)',region:'Lunar south pole',lat:-88.4,lon:95,type:'Hypothetical coordinate',description:'Synthetic candidate; terrain geometry here is not measured.'},
+  {id:'polar-plateau',name:'Polar Plateau C (concept)',region:'Lunar south pole',lat:-87.8,lon:140,type:'Hypothetical coordinate',description:'Synthetic candidate for changing illumination and Earth visibility.'},
+  {id:'chandrayaan3',name:'Chandrayaan-3 · Shiva Shakti',region:'South polar region',lat:-69.373,lon:32.319,type:'Historic landing site',description:'Approximate Vikram landing coordinate from published references.'},
+  {id:'im1',name:'IM-1 Odysseus',region:'South polar region',lat:-80.13,lon:1.44,type:'Historic landing site',description:'Approximate IM-1 lunar landing coordinate; not a future CLPS target forecast.'},
+  {id:'apollo-11',name:'Apollo 11 · Tranquility Base',region:'Mare Tranquillitatis',lat:0.67416,lon:23.47314,type:'Historic landing site',description:'NASA NSSDC lunar module site coordinate (DE421 ME/PA lunar frame).'},
+  {id:'apollo-12',name:'Apollo 12 · Oceanus Procellarum',region:'Oceanus Procellarum',lat:-3.0128,lon:-23.4219,type:'Historic landing site',description:'NASA NSSDC lunar module landing coordinates.'},
+  {id:'apollo-14',name:'Apollo 14 · Fra Mauro',region:'Fra Mauro',lat:-3.64589,lon:-17.47194,type:'Historic landing site',description:'NASA NSSDC lunar module landing coordinates.'},
+  {id:'apollo-15',name:'Apollo 15 · Hadley Rille',region:'Hadley Rille',lat:26.13239,lon:3.6333,type:'Historic landing site',description:'NASA NSSDC lunar module landing coordinates.'},
+  {id:'apollo-16',name:'Apollo 16 · Descartes',region:'Descartes Highlands',lat:-8.9734,lon:15.5011,type:'Historic landing site',description:'NASA NSSDC lunar module landing coordinates.'},
+  {id:'apollo-17',name:'Apollo 17 · Taurus–Littrow',region:'Taurus–Littrow',lat:20.1911,lon:30.7723,type:'Historic landing site',description:'NASA NSSDC lunar module landing coordinates.'},
+  {id:'change3',name:'Chang’e-3',region:'Mare Imbrium',lat:44.1214,lon:-19.5116,type:'Historic landing site',description:'Approximate published lunar landing coordinates.'},
+  {id:'change4',name:'Chang’e-4 · Von Kármán',region:'Far side',lat:-45.444,lon:177.599,type:'Historic landing site',description:'Approximate published lunar far-side landing coordinates.'},
+  {id:'change5',name:'Chang’e-5',region:'Oceanus Procellarum',lat:43.0576,lon:-51.9161,type:'Historic landing site',description:'Approximate published lunar landing coordinates.'},
+  {id:'change6',name:'Chang’e-6 · Apollo Basin',region:'Far side',lat:-41.6385,lon:-153.9852,type:'Historic landing site',description:'Approximate published far-side landing coordinate. Direct-to-Earth visibility can be absent.'},
 ];
 
 export function julianCenturiesInput(date) {

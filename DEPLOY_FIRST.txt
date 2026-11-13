@@ -1,37 +1,38 @@
-LUNARIS — TEAM CODEXGALAXY — DEPLOY FIRST
-=========================================
+LUNARIS 2026 — UPDATED WEBSITE / GITHUB PAGES
+===========================================
 
-1. EXTRACT this ZIP. Do not upload the ZIP file directly as your website.
-2. Create a PUBLIC empty repository at https://github.com/new (suggested name: lunaris).
-3. Add/upload ALL EXTRACTED FILES to your repository's MAIN branch.
-   Make sure hidden folder .github/workflows/deploy.yml is also uploaded.
-4. Open repository Settings > Pages > Build and deployment > Source > GitHub Actions.
-5. Open Actions and check successful deployment. Use your live Pages URL from Settings > Pages.
+Existing repository: https://github.com/IA-MAHIM/Lunaris
+Published site:     https://ia-mahim.github.io/Lunaris/
 
-ALTERNATIVE: Settings > Pages > Deploy from a branch > main > /(root) > Save.
+1. EXTRACT this ZIP.
+2. Open your GitHub repository → Code → Add file → Upload files.
+3. Upload ALL EXTRACTED FILES to the repository root (NOT the ZIP).
+   Replace existing index.html, app.js, physics.js, moon3d.js,
+   styles.css, README.md, assets/ and all other matching files.
+   IMPORTANT: Upload the NEW design.css and assets/earth-map.jpg.
+4. Click Commit changes to MAIN.
+5. Keep Settings → Pages → Deploy from branch → main → /(root).
+6. Reload your live site with Ctrl+Shift+R.
 
-TO TEST ON YOUR PC:
-Open a terminal INSIDE the extracted folder and run:
-    python -m http.server 8000
-Then open http://localhost:8000 in a browser.
+CHECK THESE SCREENS:
+  Overview → Mission Planner → Visibility Analysis → Compare 4 Missions
+  → Data & Methods → Final Report
 
-To generate actual NASA/JPL Horizons sample data on a computer with internet:
-    python scripts/fetch_horizons.py --contact your-real-email@yourdomain.com --start 2026-11-13 --days 75
-After running, commit updated data/horizons-catalog.json to your repository.
+TRY THIS:
+  Planner: select Apollo 11, date 2026-12-05, duration 5 days,
+  click Analyze visibility. Then click Compare up to 4 missions.
+  Change three alternate sites and dates and click Compare all.
+  Then open Data & Methods and Final Report.
+  Download the .md report and .csv time series.
 
-IMPORTANT:
-- LUNARIS works by default with LABELED APPROXIMATE educational calculations.
-- The ZIP does not include actual fetched JPL ephemeris results or LOLA terrain data.
-- Do not claim the approximate simulation is a NASA-validated flight-planning tool.
-- Read README.md and docs/LOCAL_SUBMISSION_CHECKLIST.md before submission.
+IMPORTANT SCIENTIFIC DISCLOSURE:
+  Values are DEMO ESTIMATES unless actual JPL Horizons data have
+  been fetched, imported and validated. This version does NOT
+  contain verified LOLA terrain datasets. Do not claim NASA verified
+  the geometry, terrain, engineering scores or power models.
 
-Challenge: NASA Space Apps 2026 — Lunar Landing Site Navigator
-Project: LUNARIS — Plan. Optimize. Simulate.
-Local organizer's latest deadline: 13 November 2026, 6:00 PM Bangladesh time.
+ONLINE: No npm install, API key, paid hosting or server required.
 
-OFFICIAL NASA RESOURCE UPDATE (13 NOV 2026)
-- See docs/OFFICIAL_RESOURCES_AND_DATA.md for Horizons / Quickmap / Moon Trek / CSA.
-- No measured lunar terrain or pre-fetched Horizons table is included.
-- Optional real JPL measurements: on Windows double-click GET_REAL_JPL_DATA_WINDOWS.bat
-  and follow the prompt (requires Python 3 and internet). Then commit data/horizons-catalog.json.
-- The existing website works offline in clearly labeled ANALYTIC ESTIMATE mode.
+For local Windows use, run Python web server from the project folder:
+  py -m http.server 8000
+Then visit http://localhost:8000/

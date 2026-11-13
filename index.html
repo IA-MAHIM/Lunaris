@@ -1,131 +1,109 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#07121e" />
-  <meta name="description" content="LUNARIS is Team CodexGalaxy's interactive lunar landing-site and mission-window planning prototype for NASA Space Apps Challenge 2026." />
-  <title>LUNARIS — Lunar Mission Intelligence | CodexGalaxy</title>
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
-  <link rel="stylesheet" href="styles.css" />
-</head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#030b19" name="theme-color"/>
+<meta content="LUNARIS is Team CodexGalaxy's interactive lunar landing-site and mission-window planning prototype for NASA Space Apps Challenge 2026." name="description"/>
+<title>LUNARIS | Lunar Mission Navigator — CodexGalaxy 2026</title>
+<link href="assets/favicon.svg" rel="icon" type="image/svg+xml"/>
+<link href="styles.css" rel="stylesheet"/>
+<link href="design.css" rel="stylesheet"/></head>
 <body>
-<div id="app" class="app-shell">
-  <aside class="sidebar" aria-label="Primary navigation">
-    <a class="brand" href="#dashboard" aria-label="Lunaris home"><span class="brand-symbol">◑</span><span><strong>LUNARIS</strong><small>MISSION INTELLIGENCE</small></span></a>
-    <div class="nav-group-title">WORKSPACE</div>
-    <nav id="nav" class="nav">
-      <a class="nav-link active" href="#dashboard"><span class="nav-ico">◉</span> Overview</a>
-      <a class="nav-link" href="#planner"><span class="nav-ico">◎</span> Mission Planner</a>
-      <a class="nav-link" href="#analysis"><span class="nav-ico">▤</span> Visibility Analysis</a>
-      <a class="nav-link" href="#comparison"><span class="nav-ico">◧</span> Site Comparison</a>
-      <a class="nav-link" href="#optimizer"><span class="nav-ico">✧</span> Window Optimizer</a>
-      <a class="nav-link" href="#sources"><span class="nav-ico">⌁</span> Data & Methods</a>
-    </nav>
-    <div class="sidebar-bottom">
-      <span class="signal"><i></i> SYSTEM OPERATIONAL</span>
-      <div class="mission-id">NASA SPACE APPS CHALLENGE <b>2026</b></div>
-      <div class="copyright">MADE BY TEAM CODEXGALAXY<br/>IUBAT · DHAKA, BANGLADESH</div>
-    </div>
-  </aside>
-
-  <div class="workspace">
-    <header class="topbar">
-      <div class="crumb"><span class="mobile-mark">◑ LUNARIS</span><span class="desktop-crumb">MISSION CONTROL <em>/</em> LUNAR LANDING SITE NAVIGATOR</span></div>
-      <div class="topbar-actions">
-        <span class="tiny-tag">● SIMULATION ONLINE</span>
-        <span id="clock" class="utc-clock">UTC —</span>
-        <button id="exportBtn" class="btn btn-ghost btn-small" title="Download mission report">⇩ <span>Export report</span></button>
-      </div>
-    </header>
-
-    <main>
-      <section id="dashboard" class="hero-section section-anchor">
-        <div class="hero-text">
-          <div class="eyebrow"><span class="eyebrow-line"></span> CODEXGALAXY / NASA SPACE APPS 2026</div>
-          <h1>Navigate the Moon.<br/><span>Plan what comes next.</span></h1>
-          <p>Explore lunar landing sites, assess illumination and direct-to-Earth visibility, and compare mission windows in an interactive planning environment.</p>
-          <div class="hero-cta"><a class="btn btn-primary" href="#planner">Launch Mission Planner <span>↗</span></a><a class="btn btn-link" href="#sources">Explore scientific method <span>↗</span></a></div>
-          <div class="hero-status"><span class="dot-live"></span><span id="dataModeHero">ANALYTIC DEMONSTRATION • NASA DATA IMPORT READY</span></div>
-        </div>
-        <div class="orbit-hero" aria-hidden="true"><div class="orbit-ring ring-a"></div><div class="orbit-ring ring-b"></div><div class="orbit-ring ring-c"></div><div class="orbit-moon"></div><div class="orbit-caption">LUNAR SOUTH POLAR REGION <b>86°–90° S</b></div></div>
-      </section>
-
-      <section class="metric-grid" aria-label="Mission summary">
-        <article class="metric-card"><div class="metric-label">SELECTED LATITUDE <span>↗</span></div><div id="metricLat" class="metric-value">89.50° S</div><div class="metric-detail">Lunar surface coordinate</div></article>
-        <article class="metric-card"><div class="metric-label">SOLAR AVAILABILITY <span class="metric-circle amber">☀</span></div><div id="metricSun" class="metric-value">—</div><div class="metric-detail">Of selected mission period</div></article>
-        <article class="metric-card"><div class="metric-label">EARTH VISIBILITY <span class="metric-circle cyan">◉</span></div><div id="metricEarth" class="metric-value">—</div><div class="metric-detail">Line of sight to Earth center</div></article>
-        <article class="metric-card"><div class="metric-label">WINDOW SCORE <span class="metric-circle teal">↗</span></div><div id="metricScore" class="metric-value">—</div><div class="metric-detail">Exploratory comparison index</div></article>
-      </section>
-
-      <section id="planner" class="content-section section-anchor">
-        <div class="section-heading"><div><span class="section-kicker">01 / MISSION CONTROL</span><h2>Mission Planner</h2><p>Set a coordinate, schedule a mission, and explore the changing lunar sky.</p></div><span id="engineBadge" class="data-badge">◇ ANALYTIC ESTIMATE</span></div>
-        <div class="planner-grid">
-          <div class="panel globe-panel">
-            <div class="panel-heading"><div><span class="panel-pretitle">LUNAR ORBITAL VISUALIZATION</span><h3>Interactive Moon</h3></div><span class="panel-pill">DRAG TO ROTATE · SCROLL TO ZOOM</span></div>
-            <div class="globe-stage" id="globeStage"><canvas id="moonCanvas" aria-label="Interactive three-dimensional Moon model"></canvas><canvas id="moonOverlay" aria-label="Click a visible site marker to select a location"></canvas><div class="globe-edge-label edge-top">NORTH ↑ <b>IAU MOON</b></div><div class="globe-edge-label edge-bottom">ORIENTATION VIEW <b>VISUAL MODEL</b></div><button id="resetView" class="globe-reset" title="Reset lunar globe camera">⌖ Reset view</button></div>
-            <div class="globe-footer"><span><i class="legend-dot legend-selected"></i> Selected site</span><span><i class="legend-dot legend-site"></i> Reference site</span><span class="subtle-text">Textured globe • not a LOLA DEM</span></div>
-          </div>
-          <div class="panel control-panel">
-            <div class="panel-heading"><div><span class="panel-pretitle">SET YOUR PARAMETERS</span><h3>Mission Configuration</h3></div><span class="step-pill">STEP 01</span></div>
-            <div class="controls-body">
-              <label class="field-label" for="siteSelect">LANDING SITE</label>
-              <select id="siteSelect" class="field-control"></select>
-              <div id="siteDescription" class="field-hint">—</div>
-              <div class="custom-coords"><div><label class="field-label" for="latInput">LATITUDE (°)</label><input id="latInput" type="number" min="-90" max="90" step="0.0001" class="field-control" value="-89.5"/></div><div><label class="field-label" for="lonInput">LONGITUDE (° E)</label><input id="lonInput" type="number" min="-180" max="360" step="0.0001" class="field-control" value="0"/></div></div>
-              <button id="applyCoords" class="btn btn-outline btn-inline">＋ Use these coordinates</button>
-              <div class="field-separator"></div>
-              <label class="field-label" for="dateInput">MISSION START (UTC)</label>
-              <input id="dateInput" type="date" class="field-control" value="2026-11-13" />
-              <label class="field-label" for="durationSelect">MISSION DURATION</label>
-              <select id="durationSelect" class="field-control"><option value="3">3 Earth days</option><option value="5" selected>5 Earth days</option><option value="7">7 Earth days</option><option value="14">14 Earth days</option></select>
-              <div class="switch-row"><div><b>Illustrative terrain horizon</b><small>Synthetic obstacles, NOT LOLA elevation data</small></div><label class="switch"><input type="checkbox" id="terrainToggle"/><span class="switch-track"></span></label></div>
-              <button class="btn btn-primary btn-full" id="analyzeBtn">Analyze Mission Window <span>→</span></button>
-              <div class="source-note"><span>ⓘ</span> Figures default to a simplified educational model. Import JPL ephemerides to use verified source data for supported sites and dates.</div>
-            </div>
-          </div>
-          <div class="panel sky-panel">
-            <div class="panel-heading"><div><span class="panel-pretitle">LOCAL LUNAR SKY</span><h3>Horizon Radar</h3></div><span class="panel-pill">AZIMUTH / ELEVATION</span></div>
-            <svg id="skySvg" class="sky-svg" viewBox="0 0 360 310" role="img" aria-label="Sky dome projection of Sun and Earth relative to lunar horizon"></svg>
-            <div class="sky-data"><div><span>☀ SUN ELEVATION</span><b id="sunElevation" class="text-amber">—</b><small id="sunStatus">—</small></div><div><span>◉ EARTH ELEVATION</span><b id="earthElevation" class="text-cyan">—</b><small id="earthStatus">—</small></div></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="analysis" class="content-section section-anchor">
-        <div class="section-heading"><div><span class="section-kicker">02 / EPHEMERIS & VISIBILITY</span><h2>Illumination & Communication</h2><p>See how mission conditions evolve hour by hour along your chosen timeline.</p></div><span class="section-meta">ALL TIMES UTC</span></div>
-        <div class="analysis-grid">
-          <div class="panel timeline-panel"><div class="panel-heading"><div><span class="panel-pretitle">MISSION EVENT TIMELINE</span><h3>Sunlight / Earth visibility</h3></div><div class="legend-bar"><span><i class="legend-dot legend-sun"></i> Sunlit</span><span><i class="legend-dot legend-earth"></i> Earth visible</span></div></div>
-            <div class="timeline-wrap"><div class="timeline-labels"><span>SUNLIGHT</span><span>EARTH LINK</span><span>OVERLAP</span></div><div class="timeline-display"><div id="sunTimeline" class="timeline-row"></div><div id="earthTimeline" class="timeline-row"></div><div id="overlapTimeline" class="timeline-row"></div><div id="timelineTicks" class="timeline-ticks"></div></div></div>
-            <div class="playback"><button id="playBtn" class="play-btn" title="Play or pause simulation">▶</button><input id="timeSlider" type="range" min="0" max="40" value="0" step="1" aria-label="Mission time"/><span id="timeStamp" class="play-time">—</span><select id="speedSelect" class="speed-select" aria-label="Playback speed"><option value="1">1×</option><option value="3">3×</option><option value="6">6×</option></select></div>
-            <div class="event-grid"><div><span>☀ NEXT SUN EVENT</span><strong id="nextSun">—</strong></div><div><span>◉ NEXT EARTH EVENT</span><strong id="nextEarth">—</strong></div><div><span>LONGEST SUNLESS PERIOD</span><strong id="darkPeriod">—</strong></div><div><span>LONGEST EARTH BLACKOUT</span><strong id="commPeriod">—</strong></div></div>
-          </div>
-          <div class="panel power-panel"><div class="panel-heading"><div><span class="panel-pretitle">ENGINEERING CONSEQUENCES</span><h3>Illustrative Power Budget</h3></div><span class="model-tag">SIMPLIFIED MODEL</span></div>
-            <div class="power-figure"><span>BATTERY AT PLAYHEAD</span><div><b id="batteryValue">—</b><small>%</small></div><div class="battery-track"><span id="batteryFill"></span></div><p id="batteryWarning">For teaching only; not a hardware qualification.</p></div>
-            <div class="compact-control"><label for="solarInput">SOLAR ARRAY (W) <b id="solarLabel">3500 W</b></label><input type="range" min="500" max="8000" step="250" value="3500" id="solarInput"/></div>
-            <div class="compact-control"><label for="loadInput">PAYLOAD LOAD (W) <b id="loadLabel">65 W</b></label><input type="range" min="20" max="200" step="5" value="65" id="loadInput"/></div>
-            <div class="compact-control"><label for="capacityInput">BATTERY CAPACITY (Wh) <b id="capacityLabel">6000 Wh</b></label><input type="range" min="1000" max="12000" step="500" value="6000" id="capacityInput"/></div>
-          </div>
-        </div>
-        <div class="panel chart-panel"><div class="panel-heading"><div><span class="panel-pretitle">ANGLE CHANGES OVER TIME</span><h3>Solar & Earth elevation profile</h3></div><div class="legend-bar"><span><i class="legend-dot legend-sun"></i> Solar elevation</span><span><i class="legend-dot legend-earth"></i> Earth elevation</span></div></div><div class="chart-wrap"><svg id="elevationChart" viewBox="0 0 1120 255" role="img" aria-label="Line chart of modeled Sun and Earth elevation over the selected mission"></svg></div><div class="chart-notice">Dashed reference line represents a zero-degree spherical horizon. Synthetic obstacles, when enabled, are evaluated separately.</div></div>
-      </section>
-
-      <section id="comparison" class="content-section section-anchor"><div class="section-heading"><div><span class="section-kicker">03 / TRADE STUDY</span><h2>Compare Mission Scenarios</h2><p>Compare candidate coordinates or changing launch windows side by side.</p></div></div>
-        <div class="panel comparison-panel"><div class="compare-controls"><div><label class="field-label" for="compareSite">SECONDARY SITE</label><select id="compareSite" class="field-control"></select></div><div><label class="field-label" for="compareDate">SECONDARY START (UTC)</label><input type="date" id="compareDate" class="field-control" value="2026-11-20" /></div><button id="compareBtn" class="btn btn-outline">Update comparison →</button></div><div class="compare-grid" id="compareCards"></div></div>
-      </section>
-
-      <section id="optimizer" class="content-section section-anchor"><div class="section-heading"><div><span class="section-kicker">04 / MISSION WINDOW SEARCH</span><h2>Opportunity Finder</h2><p>Explore candidate start dates and compare solar and Earth-link opportunity.</p></div><span class="model-tag">HEURISTIC / NOT FLIGHT VALIDATION</span></div>
-        <div class="panel optimizer-panel"><div class="optimizer-top"><div><b>Search upcoming mission windows</b><p>We score dates in the selected range using sunlight, Earth visibility, overlap, and uninterrupted communications.</p></div><div class="optimizer-input"><select id="searchDays" class="field-control" aria-label="Search span"><option value="30">Next 30 days</option><option value="60" selected>Next 60 days</option><option value="90">Next 90 days</option></select><button id="optimizeBtn" class="btn btn-primary">Find Windows ✧</button></div></div><div id="optimizerResults" class="optimizer-results"><div class="empty-state">Select <b>Find Windows</b> to rank candidate dates.</div></div></div>
-      </section>
-
-      <section id="sources" class="content-section section-anchor"><div class="section-heading"><div><span class="section-kicker">05 / SCIENTIFIC TRANSPARENCY</span><h2>Data, Assumptions & Sources</h2><p>Every estimate should be traceable, and every limitation should be visible.</p></div></div>
-        <div class="sources-grid"><div class="panel sources-panel"><span class="panel-pretitle">CURRENT COMPUTATIONAL MODE</span><div id="sourceModeBig" class="source-title">Analytical estimate</div><p id="sourceDescription">First-order approximate solar/lunar geometry. Does not claim JPL-validated accuracy.</p><div class="source-points"><div><span class="source-indicator green"></span><span>NASA Space Apps official challenge: <b>Lunar Landing Site Navigator</b></span></div><div><span class="source-indicator yellow"></span><span>Sun/Earth geometry: <b>approximation unless Horizons data imported</b></span></div><div><span class="source-indicator yellow"></span><span>Terrain: <b>zero horizon or synthetic educational profile; no LOLA DEM</b></span></div><div><span class="source-indicator green"></span><span>Power model: <b>flat horizontal panel, simple energy balance</b></span></div></div><label class="btn btn-outline file-btn">↑ Import JPL Horizons JSON <input id="jplImport" type="file" accept=".json,application/json" hidden/></label><div id="importMessage" class="import-message">Data stays in your browser session. You can also commit the generated JSON to <code>data/horizons-catalog.json</code>.</div></div><div class="panel sources-panel"><span class="panel-pretitle">OFFICIAL REFERENCES</span><div class="source-links"><a href="https://www.spaceappschallenge.org/2026/challenges/lunar-landing-site-navigator/" target="_blank" rel="noopener noreferrer"><span>2026 Space Apps challenge statement</span>↗</a><a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noopener noreferrer"><span>NASA/JPL Horizons Ephemeris System</span>↗</a><a href="https://ssd-api.jpl.nasa.gov/doc/horizons.html" target="_blank" rel="noopener noreferrer"><span>Horizons API documentation · Sun & Earth angles</span>↗</a><a href="https://quickmap.lroc.asu.edu/" target="_blank" rel="noopener noreferrer"><span>LROC Quickmap · imagery & terrain reference</span>↗</a><a href="https://trek.nasa.gov/moon/" target="_blank" rel="noopener noreferrer"><span>NASA Moon Trek · 3D terrain exploration</span>↗</a><a href="https://www.asc-csa.gc.ca/eng/astronomy/moon-exploration/" target="_blank" rel="noopener noreferrer"><span>CSA Moon Exploration · partner resource</span>↗</a><a href="https://pds-geosciences.wustl.edu/missions/lro/lola.htm" target="_blank" rel="noopener noreferrer"><span>LRO / LOLA · future DEM integration</span>↗</a></div><div class="source-footnote">Official challenge resources verified 13 November 2026: Horizons, Quickmap, Moon Trek, and CSA. The listed maps are research references, not embedded calibrated datasets. LUNARIS is an independent participant prototype; NASA does not endorse or validate this software.</div></div></div>
-      </section>
-      <footer class="site-footer"><div><b>◑ LUNARIS</b><span>Plan. Optimize. Simulate.</span></div><div>BUILT BY <strong>CODEXGALAXY</strong> · IUBAT · DHAKA</div><a href="#dashboard">BACK TO TOP ↑</a></footer>
-    </main>
-  </div>
+<div class="app-shell" id="app">
+<aside aria-label="Primary navigation" class="sidebar">
+<a aria-label="Lunaris home" class="brand" href="#overview"><span class="brand-symbol">☾</span><span><strong>LUNARIS</strong><small>LUNAR MISSION NAVIGATOR</small></span></a>
+<div class="nav-group-title">WORKSPACE</div>
+<nav class="nav" id="nav"><a class="nav-link active" href="#overview"><span class="nav-ico">⌂</span> Overview</a><a class="nav-link" href="#planner"><span class="nav-ico">◎</span> 01 · Mission Planner</a><a class="nav-link" href="#analysis"><span class="nav-ico">◈</span> 02 · Visibility Analysis</a><a class="nav-link" href="#comparison"><span class="nav-ico">▣</span> 03 · Compare 4 Missions</a><a class="nav-link" href="#methods"><span class="nav-ico">⌁</span> 04 · Data &amp; Methods</a><a class="nav-link" href="#report"><span class="nav-ico">⇩</span> 05 · Final Report</a></nav>
+<div class="sidebar-bottom">
+<span class="signal"><i></i> SYSTEM OPERATIONAL</span>
+<div class="mission-id">NASA SPACE APPS CHALLENGE <b>2026</b></div>
+<div class="copyright">MADE BY TEAM CODEXGALAXY<br/>IUBAT · DHAKA, BANGLADESH</div>
 </div>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script type="module" src="app.js"></script>
-</body>
+</aside>
+<div class="workspace">
+<header class="topbar">
+<div class="crumb"><span class="mobile-mark">◑ LUNARIS</span><span class="desktop-crumb">LUNARIS / MISSION CONTROL / NASA SPACE APPS 2026</span></div>
+<div class="topbar-actions"><span class="tiny-tag">● LIVE DEMONSTRATION</span><span class="utc-clock" id="clock">UTC</span></div>
+</header>
+<main><section class="view-page is-active" data-page="overview" id="overview"><div class="flow-steps"><a aria-label="Step 1: Welcome" class="flow-step current" href="#overview"><span>1</span><b>Welcome</b></a><a aria-label="Step 2: Plan mission" class="flow-step" href="#planner"><span>2</span><b>Plan mission</b></a><a aria-label="Step 3: Analyze" class="flow-step" href="#analysis"><span>3</span><b>Analyze</b></a><a aria-label="Step 4: Compare" class="flow-step" href="#comparison"><span>4</span><b>Compare</b></a><a aria-label="Step 5: Methods" class="flow-step" href="#methods"><span>5</span><b>Methods</b></a><a aria-label="Step 6: Report" class="flow-step" href="#report"><span>6</span><b>Report</b></a></div><section class="hero-section" id="homeHero">
+<div class="hero-text">
+<div class="eyebrow"><span class="eyebrow-line"></span> CODEXGALAXY / NASA SPACE APPS 2026</div>
+<h1>Navigate the Moon.<br/><span>Plan what comes next.</span></h1>
+<p>Explore landing sites and dates, visualize the Sun and Earth in the lunar sky, and compare operational windows in one mission-planning experience.</p>
+<div class="hero-cta"><a class="btn btn-primary" href="#planner">Launch Mission Planner <span>↗</span></a><a class="btn btn-link" href="#methods">Explore scientific method <span>↗</span></a></div>
+<div class="hero-status"><span class="dot-live"></span><span id="dataModeHero">ANALYTIC DEMONSTRATION • NASA DATA IMPORT READY</span></div>
+</div>
+<div aria-hidden="true" class="orbit-hero"><div class="orbit-ring ring-a"></div><div class="orbit-ring ring-b"></div><div class="orbit-ring ring-c"></div><div class="orbit-moon"></div><div class="orbit-caption">LUNAR SOUTH POLAR REGION <b>86°–90° S</b></div></div>
+</section><section aria-label="Mission summary" class="metric-grid">
+<article class="metric-card"><div class="metric-label">SELECTED LATITUDE <span>↗</span></div><div class="metric-value" id="metricLat">89.50° S</div><div class="metric-detail">Lunar surface coordinate</div></article>
+<article class="metric-card"><div class="metric-label">SOLAR AVAILABILITY <span class="metric-circle amber">☀</span></div><div class="metric-value" id="metricSun">—</div><div class="metric-detail">Of selected mission period</div></article>
+<article class="metric-card"><div class="metric-label">EARTH VISIBILITY <span class="metric-circle cyan">◉</span></div><div class="metric-value" id="metricEarth">—</div><div class="metric-detail">Line of sight to Earth center</div></article>
+<article class="metric-card"><div class="metric-label">WINDOW SCORE <span class="metric-circle teal">↗</span></div><div class="metric-value" id="metricScore">—</div><div class="metric-detail">Exploratory comparison index</div></article>
+</section><div class="intro-band"><div><span class="gold-kicker">YOUR MISSION STARTS HERE</span><h2>One decision can change an entire lunar mission.</h2><p>Explore the Sun, Earth, and local lunar horizon through an interactive planning workflow. Select a site, simulate visibility, then compare up to four candidate windows.</p></div><a class="btn btn-primary big-action" href="#planner">Start mission planning <span>→</span></a></div><div class="steps-row"><div><span>01</span><b>Select a location</b><small>16 reference sites + custom coordinates</small></div><div><span>02</span><b>Explore the lunar sky</b><small>Sunlight, Earth visibility and power</small></div><div><span>03</span><b>Compare &amp; report</b><small>Four scenarios, traceable methodology</small></div></div><div class="page-actions"><span></span><a class="btn btn-primary" href="#planner">Start planning →</a></div></section>
+<section class="content-section section-anchor view-page" data-page="planner" id="planner"><div class="flow-steps"><a aria-label="Step 1: Welcome" class="flow-step done" href="#overview"><span>1</span><b>Welcome</b></a><a aria-label="Step 2: Plan mission" class="flow-step current" href="#planner"><span>2</span><b>Plan mission</b></a><a aria-label="Step 3: Analyze" class="flow-step" href="#analysis"><span>3</span><b>Analyze</b></a><a aria-label="Step 4: Compare" class="flow-step" href="#comparison"><span>4</span><b>Compare</b></a><a aria-label="Step 5: Methods" class="flow-step" href="#methods"><span>5</span><b>Methods</b></a><a aria-label="Step 6: Report" class="flow-step" href="#report"><span>6</span><b>Report</b></a></div>
+<div class="section-heading"><div><span class="section-kicker">01 / MISSION CONTROL</span><h2>Choose your lunar landing site</h2><p>Start with an existing mission site or enter any lunar coordinate. Then choose a date and analyze your mission.</p></div><span class="data-badge" id="engineBadge">◇ ANALYTIC ESTIMATE</span></div>
+<div class="planner-grid">
+<div class="panel globe-panel">
+<div class="panel-heading"><div><span class="panel-pretitle">LUNAR ORBITAL VISUALIZATION</span><h3>Interactive Moon</h3></div><span class="panel-pill">DRAG TO ROTATE · SCROLL TO ZOOM</span></div>
+<div class="globe-stage" id="globeStage"><canvas aria-label="Interactive three-dimensional Moon model" id="moonCanvas"></canvas><canvas aria-label="Click a visible site marker to select a location" id="moonOverlay"></canvas><div class="globe-edge-label edge-top">NORTH ↑ <b>IAU MOON</b></div><div class="globe-edge-label edge-bottom">ORIENTATION VIEW <b>VISUAL MODEL</b></div><button class="globe-reset" id="resetView" title="Reset lunar globe camera">⌖ Reset view</button></div>
+<div class="globe-footer"><span><i class="legend-dot legend-selected"></i> Selected site</span><span><i class="legend-dot legend-site"></i> Reference site</span><span class="subtle-text">Textured globe • not a LOLA DEM</span></div>
+</div>
+<div class="panel control-panel">
+<div class="panel-heading"><div><span class="panel-pretitle">SET YOUR PARAMETERS</span><h3>Mission Configuration</h3></div><span class="step-pill">STEP 01</span></div>
+<div class="controls-body">
+<label class="field-label" for="siteSelect">LANDING SITE</label>
+<select class="field-control" id="siteSelect"></select>
+<div class="field-hint" id="siteDescription">—</div>
+<div class="custom-coords"><div><label class="field-label" for="latInput">LATITUDE (°)</label><input class="field-control" id="latInput" max="90" min="-90" step="0.0001" type="number" value="-89.5"/></div><div><label class="field-label" for="lonInput">LONGITUDE (° E)</label><input class="field-control" id="lonInput" max="360" min="-180" step="0.0001" type="number" value="0"/></div></div>
+<button class="btn btn-outline btn-inline" id="applyCoords">＋ Use these coordinates</button>
+<div class="field-separator"></div>
+<label class="field-label" for="dateInput">MISSION START (UTC)</label>
+<input class="field-control" id="dateInput" type="date" value="2026-11-13"/>
+<label class="field-label" for="durationSelect">MISSION DURATION</label>
+<select class="field-control" id="durationSelect"><option value="3">3 Earth days</option><option selected="" value="5">5 Earth days</option><option value="7">7 Earth days</option><option value="14">14 Earth days</option></select>
+<div class="switch-row"><div><b>Illustrative terrain horizon</b><small>Synthetic obstacles, NOT LOLA elevation data</small></div><label class="switch"><input id="terrainToggle" type="checkbox"/><span class="switch-track"></span></label></div>
+<button class="btn btn-primary btn-full" id="analyzeBtn">Analyze visibility &amp; continue →</button>
+<div class="source-note"><span>ⓘ</span> Figures default to a simplified educational model. Import JPL ephemerides to use verified source data for supported sites and dates.</div>
+</div>
+</div>
+</div>
+<div class="page-actions"><a class="btn btn-outline" href="#overview">← Previous step</a><a class="btn btn-primary" href="#analysis">Next: View analysis →</a></div></section>
+<section class="content-section section-anchor view-page" data-page="analysis" id="analysis"><div class="flow-steps"><a aria-label="Step 1: Welcome" class="flow-step done" href="#overview"><span>1</span><b>Welcome</b></a><a aria-label="Step 2: Plan mission" class="flow-step done" href="#planner"><span>2</span><b>Plan mission</b></a><a aria-label="Step 3: Analyze" class="flow-step current" href="#analysis"><span>3</span><b>Analyze</b></a><a aria-label="Step 4: Compare" class="flow-step" href="#comparison"><span>4</span><b>Compare</b></a><a aria-label="Step 5: Methods" class="flow-step" href="#methods"><span>5</span><b>Methods</b></a><a aria-label="Step 6: Report" class="flow-step" href="#report"><span>6</span><b>Report</b></a></div><div class="section-heading"><div><span class="section-kicker">02 / EPHEMERIS &amp; VISIBILITY</span><h2>Sunlight, Earth visibility &amp; power</h2><p>Calculated angular positions, visibility windows and an interactive lunar-day playback.</p></div><span class="section-meta">ALL TIMES UTC</span></div><div class="analysis-action"><div><strong>Mission scenario</strong><span id="analysisScenario">—</span></div><div><strong>Results source</strong><span id="analysisMode">Educational analytical estimate</span></div><button class="btn btn-yellow" id="compareFromAnalysis">Compare up to 4 missions →</button></div><div class="sky-cosmos"><div class="panel sky-panel">
+<div class="panel-heading"><div><span class="panel-pretitle">LOCAL LUNAR SKY</span><h3>Horizon Radar</h3></div><span class="panel-pill">AZIMUTH / ELEVATION</span></div>
+<svg aria-label="Sky dome projection of Sun and Earth relative to lunar horizon" class="sky-svg" id="skySvg" role="img" viewbox="0 0 360 310"></svg>
+<div class="sky-data"><div><span>☀ SUN ELEVATION</span><b class="text-amber" id="sunElevation">—</b><small id="sunStatus">—</small></div><div><span>◉ EARTH ELEVATION</span><b class="text-cyan" id="earthElevation">—</b><small id="earthStatus">—</small></div></div>
+</div><div class="orbital-viz"><div class="orbit-illustration"><div class="sun-sphere"><span class="sphere-glow"></span></div><div class="earth-sphere"></div><div class="orbit-horizon"></div><span class="sun-caption">SUN · SOLAR ILLUMINATION</span><span class="earth-caption">EARTH · DIRECT COMMUNICATION</span></div><p class="viz-caption">Illustrative 3D-looking bodies • radar and angle values are calculated for the selected surface coordinates. Illustration is not to scale.</p></div></div>
+
+<div class="analysis-grid">
+<div class="panel timeline-panel"><div class="panel-heading"><div><span class="panel-pretitle">MISSION EVENT TIMELINE</span><h3>Sunlight / Earth visibility</h3></div><div class="legend-bar"><span><i class="legend-dot legend-sun"></i> Sunlit</span><span><i class="legend-dot legend-earth"></i> Earth visible</span></div></div>
+<div class="timeline-wrap"><div class="timeline-labels"><span>SUNLIGHT</span><span>EARTH LINK</span><span>OVERLAP</span></div><div class="timeline-display"><div class="timeline-row" id="sunTimeline"></div><div class="timeline-row" id="earthTimeline"></div><div class="timeline-row" id="overlapTimeline"></div><div class="timeline-ticks" id="timelineTicks"></div></div></div>
+<div class="playback"><button class="play-btn" id="playBtn" title="Play or pause simulation">▶</button><input aria-label="Mission time" id="timeSlider" max="40" min="0" step="1" type="range" value="0"/><span class="play-time" id="timeStamp">—</span><select aria-label="Playback speed" class="speed-select" id="speedSelect"><option value="1">1×</option><option value="3">3×</option><option value="6">6×</option></select></div>
+<div class="event-grid"><div><span>☀ NEXT SUN EVENT</span><strong id="nextSun">—</strong></div><div><span>◉ NEXT EARTH EVENT</span><strong id="nextEarth">—</strong></div><div><span>LONGEST SUNLESS PERIOD</span><strong id="darkPeriod">—</strong></div><div><span>LONGEST EARTH BLACKOUT</span><strong id="commPeriod">—</strong></div></div>
+</div>
+<div class="panel power-panel"><div class="panel-heading"><div><span class="panel-pretitle">ENGINEERING CONSEQUENCES</span><h3>Illustrative Power Budget</h3></div><span class="model-tag">SIMPLIFIED MODEL</span></div>
+<div class="power-figure"><span>BATTERY AT PLAYHEAD</span><div><b id="batteryValue">—</b><small>%</small></div><div class="battery-track"><span id="batteryFill"></span></div><p id="batteryWarning">For teaching only; not a hardware qualification.</p></div>
+<div class="compact-control"><label for="solarInput">SOLAR ARRAY (W) <b id="solarLabel">3500 W</b></label><input id="solarInput" max="8000" min="500" step="250" type="range" value="3500"/></div>
+<div class="compact-control"><label for="loadInput">PAYLOAD LOAD (W) <b id="loadLabel">65 W</b></label><input id="loadInput" max="200" min="20" step="5" type="range" value="65"/></div>
+<div class="compact-control"><label for="capacityInput">BATTERY CAPACITY (Wh) <b id="capacityLabel">6000 Wh</b></label><input id="capacityInput" max="12000" min="1000" step="500" type="range" value="6000"/></div>
+</div>
+</div>
+<div class="panel chart-panel"><div class="panel-heading"><div><span class="panel-pretitle">ANGLE CHANGES OVER TIME</span><h3>Solar &amp; Earth elevation profile</h3></div><div class="legend-bar"><span><i class="legend-dot legend-sun"></i> Solar elevation</span><span><i class="legend-dot legend-earth"></i> Earth elevation</span></div></div><div class="chart-wrap"><svg aria-label="Line chart of modeled Sun and Earth elevation over the selected mission" id="elevationChart" role="img" viewbox="0 0 1120 255"></svg></div><div class="chart-notice">Dashed reference line represents a zero-degree spherical horizon. Synthetic obstacles, when enabled, are evaluated separately.</div></div>
+<section class="content-section section-anchor" id="optimizer"><div class="section-heading"><div><span class="section-kicker">04 / MISSION WINDOW SEARCH</span><h2>Optional: find better dates</h2><p>Explore candidate start dates and compare solar and Earth-link opportunity.</p></div><span class="model-tag">HEURISTIC / NOT FLIGHT VALIDATION</span></div>
+<div class="panel optimizer-panel"><div class="optimizer-top"><div><b>Search upcoming mission windows</b><p>We score dates in the selected range using sunlight, Earth visibility, overlap, and uninterrupted communications.</p></div><div class="optimizer-input"><select aria-label="Search span" class="field-control" id="searchDays"><option value="30">Next 30 days</option><option selected="" value="60">Next 60 days</option><option value="90">Next 90 days</option></select><button class="btn btn-primary" id="optimizeBtn">Find Windows ✧</button></div></div><div class="optimizer-results" id="optimizerResults"><div class="empty-state">Select <b>Find Windows</b> to rank candidate dates.</div></div></div>
+</section><div class="page-actions"><a class="btn btn-outline" href="#planner">← Previous step</a><a class="btn btn-primary" href="#comparison">Next: Compare missions →</a></div></section>
+<section class="content-section section-anchor view-page" data-page="comparison" id="comparison"><div class="flow-steps"><a aria-label="Step 1: Welcome" class="flow-step done" href="#overview"><span>1</span><b>Welcome</b></a><a aria-label="Step 2: Plan mission" class="flow-step done" href="#planner"><span>2</span><b>Plan mission</b></a><a aria-label="Step 3: Analyze" class="flow-step done" href="#analysis"><span>3</span><b>Analyze</b></a><a aria-label="Step 4: Compare" class="flow-step current" href="#comparison"><span>4</span><b>Compare</b></a><a aria-label="Step 5: Methods" class="flow-step" href="#methods"><span>5</span><b>Methods</b></a><a aria-label="Step 6: Report" class="flow-step" href="#report"><span>6</span><b>Report</b></a></div><div class="section-heading"><div><span class="section-kicker">03 / TRADE STUDY</span><h2>Compare four mission scenarios</h2><p>What changes when the landing site or mission schedule changes? Compare four combinations side by side.</p></div></div>
+<div class="panel comparison-panel"><div class="compare-four-controls"><div class="scenario-input-label"><h3>Build your trade study</h3><p>Scenario A is the mission you planned. Choose three other sites and start dates to compare four mission windows.</p></div><div class="scenario-input-row"><div class="scenario-tag">SCENARIO B</div><div><label class="field-label" for="compareSite2">LANDING SITE</label><select class="field-control" id="compareSite2"></select></div><div><label class="field-label" for="compareDate2">START DATE (UTC)</label><input class="field-control" id="compareDate2" type="date" value="2026-11-19"/></div></div><div class="scenario-input-row"><div class="scenario-tag">SCENARIO C</div><div><label class="field-label" for="compareSite3">LANDING SITE</label><select class="field-control" id="compareSite3"></select></div><div><label class="field-label" for="compareDate3">START DATE (UTC)</label><input class="field-control" id="compareDate3" type="date" value="2026-11-22"/></div></div><div class="scenario-input-row"><div class="scenario-tag">SCENARIO D</div><div><label class="field-label" for="compareSite4">LANDING SITE</label><select class="field-control" id="compareSite4"></select></div><div><label class="field-label" for="compareDate4">START DATE (UTC)</label><input class="field-control" id="compareDate4" type="date" value="2026-11-25"/></div></div><button class="btn btn-yellow compare-run" id="compareBtn">Compare all four scenarios →</button></div><div class="compare-grid" id="compareCards"></div></div>
+<div class="page-actions"><a class="btn btn-outline" href="#analysis">← Previous step</a><a class="btn btn-primary" href="#methods">Next: Data &amp; methods →</a></div></section>
+<section class="content-section section-anchor view-page" data-page="methods" id="methods"><div class="flow-steps"><a aria-label="Step 1: Welcome" class="flow-step done" href="#overview"><span>1</span><b>Welcome</b></a><a aria-label="Step 2: Plan mission" class="flow-step done" href="#planner"><span>2</span><b>Plan mission</b></a><a aria-label="Step 3: Analyze" class="flow-step done" href="#analysis"><span>3</span><b>Analyze</b></a><a aria-label="Step 4: Compare" class="flow-step done" href="#comparison"><span>4</span><b>Compare</b></a><a aria-label="Step 5: Methods" class="flow-step current" href="#methods"><span>5</span><b>Methods</b></a><a aria-label="Step 6: Report" class="flow-step" href="#report"><span>6</span><b>Report</b></a></div><div class="section-heading"><div><span class="section-kicker">05 / SCIENTIFIC TRANSPARENCY</span><h2>Scientific data, provenance &amp; limitations</h2><p>NASA/JPL Horizons, LROC Quickmap, NASA Moon Trek, LRO/LOLA and CSA lunar reference resources.</p></div></div>
+<div class="sources-grid"><div class="panel sources-panel"><span class="panel-pretitle">CURRENT COMPUTATIONAL MODE</span><div class="source-title" id="sourceModeBig">Analytical estimate</div><p id="sourceDescription">First-order approximate solar/lunar geometry. Does not claim JPL-validated accuracy.</p><div class="source-points"><div><span class="source-indicator green"></span><span>NASA Space Apps official challenge: <b>Lunar Landing Site Navigator</b></span></div><div><span class="source-indicator yellow"></span><span>Sun/Earth geometry: <b>approximation unless Horizons data imported</b></span></div><div><span class="source-indicator yellow"></span><span>Terrain: <b>zero horizon or synthetic educational profile; no LOLA DEM</b></span></div><div><span class="source-indicator green"></span><span>Power model: <b>flat horizontal panel, simple energy balance</b></span></div></div><label class="btn btn-outline file-btn">↑ Import JPL Horizons JSON <input accept=".json,application/json" hidden="" id="jplImport" type="file"/></label><div class="import-message" id="importMessage">Data stays in your browser session. You can also commit the generated JSON to <code>data/horizons-catalog.json</code>.</div></div><div class="panel sources-panel"><span class="panel-pretitle">OFFICIAL REFERENCES</span><div class="source-links"><a href="https://www.spaceappschallenge.org/2026/challenges/lunar-landing-site-navigator/" rel="noopener noreferrer" target="_blank"><span>2026 Space Apps challenge statement</span>↗</a><a href="https://ssd.jpl.nasa.gov/horizons/" rel="noopener noreferrer" target="_blank"><span>NASA/JPL Horizons Ephemeris System</span>↗</a><a href="https://ssd-api.jpl.nasa.gov/doc/horizons.html" rel="noopener noreferrer" target="_blank"><span>Horizons API documentation · Sun &amp; Earth angles</span>↗</a><a href="https://quickmap.lroc.asu.edu/" rel="noopener noreferrer" target="_blank"><span>LROC Quickmap · imagery &amp; terrain reference</span>↗</a><a href="https://trek.nasa.gov/moon/" rel="noopener noreferrer" target="_blank"><span>NASA Moon Trek · 3D terrain exploration</span>↗</a><a href="https://www.asc-csa.gc.ca/eng/astronomy/moon-exploration/" rel="noopener noreferrer" target="_blank"><span>CSA Moon Exploration · partner resource</span>↗</a><a href="https://pds-geosciences.wustl.edu/missions/lro/lola.htm" rel="noopener noreferrer" target="_blank"><span>LRO / LOLA · future DEM integration</span>↗</a></div><div class="source-footnote">Official challenge resources verified 13 November 2026: Horizons, Quickmap, Moon Trek, and CSA. The listed maps are research references, not embedded calibrated datasets. LUNARIS is an independent participant prototype; NASA does not endorse or validate this software.</div></div></div>
+<div class="method-footnote"><strong>Data disclosure:</strong> Horizons is the ephemeris source supported for cached/imported real angular samples. Quickmap and Moon Trek are external research/mapping references; LOLA elevations are not automatically downloaded or integrated. Solar/electrical and synthetic terrain outputs are illustrative. The project is independently created by CodexGalaxy and is not NASA-endorsed.</div><div class="page-actions"><a class="btn btn-outline" href="#comparison">← Previous step</a><a class="btn btn-primary" href="#report">Next: Download report →</a></div></section>
+<section class="view-page" data-page="report" id="report"><div class="flow-steps"><a aria-label="Step 1: Welcome" class="flow-step done" href="#overview"><span>1</span><b>Welcome</b></a><a aria-label="Step 2: Plan mission" class="flow-step done" href="#planner"><span>2</span><b>Plan mission</b></a><a aria-label="Step 3: Analyze" class="flow-step done" href="#analysis"><span>3</span><b>Analyze</b></a><a aria-label="Step 4: Compare" class="flow-step done" href="#comparison"><span>4</span><b>Compare</b></a><a aria-label="Step 5: Methods" class="flow-step done" href="#methods"><span>5</span><b>Methods</b></a><a aria-label="Step 6: Report" class="flow-step current" href="#report"><span>6</span><b>Report</b></a></div><div class="section-heading"><div><span class="section-kicker">05 / FINAL MISSION PACKAGE</span><h2>Your lunar mission report is ready</h2><p>Review your scenario, scientific sources and four-way comparison before exporting the report.</p></div><span class="data-badge">SAVE YOUR WORK</span></div><div class="report-banner"><div><div class="gold-kicker">LUNARIS / CODEXGALAXY 2026</div><h3>Mission readiness snapshot</h3><p id="reportSummary">—</p><div class="report-disclaimer" id="reportSource">Analytical estimate — educational use only</div></div><div aria-hidden="true" class="report-moon"></div></div><div class="report-stats"><div><span>SUNLIT TIME</span><strong id="reportSun">—</strong></div><div><span>EARTH VISIBILITY</span><strong id="reportEarth">—</strong></div><div><span>OVERLAP</span><strong id="reportOverlap">—</strong></div><div><span>EXPLORATORY INDEX</span><strong id="reportScore">—</strong></div></div><div class="panel report-panel"><div class="panel-heading"><div><span class="panel-pretitle">EXPORT YOUR RESEARCH</span><h3>Download your results</h3></div></div><p>The Markdown report records your selected lunar coordinates, mission dates, sunlight and communication estimates, power assumptions, dataset provenance, and methodological limitations. You can also export the sampled time-series as CSV.</p><div class="report-actions"><button class="btn btn-yellow" id="exportBtn">⇩ Download mission report (.md)</button><button class="btn btn-outline" id="exportCSV">⇩ Download timeline (.csv)</button><button class="btn btn-outline" id="printBtn">⎙ Print summary</button></div><div class="report-footnote">The current website may use an approximate demonstration model. Outputs are not validated spacecraft predictions. Reports explicitly identify the source and limitations.</div></div><div class="panel report-checklist"><h3>Submission-ready checklist</h3><div>✓ Website deployed on GitHub Pages</div><div>✓ Landing-site selection and 3D Moon</div><div>✓ Sun/Earth visibility, four-scenario comparison, mission report</div><div>○ Validate JPL Horizons data where included and distinguish estimated results</div><div>○ Record your 240-second local presentation</div></div><div class="page-actions"><a class="btn btn-outline" href="#methods">← Previous step</a></div></section><footer class="site-footer"><div><b>◑ LUNARIS</b><span>Plan. Optimize. Simulate.</span></div><div>BUILT BY <strong>CODEXGALAXY</strong> · IUBAT · DHAKA</div><a href="#overview">BACK TO START ↑</a></footer>
+</main>
+</div>
+</div>
+<div aria-live="polite" class="toast" id="toast" role="status"></div>
+<script src="app.js" type="module"></script>
+<noscript><div class="noscript">JavaScript is required to run the interactive LUNARIS mission planner.</div></noscript></body>
 </html>

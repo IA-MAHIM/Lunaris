@@ -13,7 +13,7 @@ varying vec3 vNormal; varying vec2 vUV; varying vec3 vPos;
 void main(){ vec3 n=normalize(vNormal); float lit=max(0.,dot(n,normalize(uLight)));
  float rim=pow(1.-max(0.,dot(n,vec3(0.,0.,1.))),2.2);
  vec3 base=texture2D(uTexture,vec2(vUV.x,1.0-vUV.y)).rgb;
- vec3 color=base*(0.14+0.9*lit)+vec3(.10,.29,.39)*rim*.72;
+ vec3 color=base*(0.17+0.91*lit)+vec3(.24,.25,.27)*rim*.40;
  gl_FragColor=vec4(color,1.); }
 `;
 function shader(gl,type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
@@ -43,7 +43,7 @@ export function makeMoon(canvas,overlay,textureURL,siteClicked){
   gl.uniform1i(gl.getUniformLocation(p,'uTexture'),0);
   gl.uniform3f(gl.getUniformLocation(p,'uLight'),-.65,.4,1.2);
   var drawGl=()=>{gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);gl.useProgram(p);gl.uniformMatrix4fv(gl.getUniformLocation(p,'uTransform'),false,rotation(pitch,yaw));gl.uniform1f(gl.getUniformLocation(p,'uZoom'),zoom);gl.uniform2f(gl.getUniformLocation(p,'uAspect'),Math.min(1,canvas.height/canvas.width),Math.min(1,canvas.width/canvas.height));gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_SHORT,0);};
- } else {var drawGl=()=>{};canvas.style.background='radial-gradient(circle at 35% 30%,#9da8b2,#475262 42%,#182635 70%,transparent 71%)';}
+ } else {var drawGl=()=>{};canvas.style.background='none'; canvas.classList.add('globe-no-webgl');}
  function point(lat,lon){const a=lat*Math.PI/180,b=lon*Math.PI/180;return [Math.cos(a)*Math.sin(b),Math.sin(a),Math.cos(a)*Math.cos(b)];}
  let locs=[];
  function drawOverlay(){const w=overlay.width,h=overlay.height,dim=Math.min(w,h);ctx.clearRect(0,0,w,h);ctx.save();ctx.translate(w/2,h/2);ctx.strokeStyle='rgba(113,183,222,.17)';ctx.lineWidth=1;
