@@ -33,4 +33,4 @@ We developed LUNARIS to combine our interest in space exploration with software 
 
 https://ia-mahim.github.io/Lunaris/
 
-**LUNARIS — Plan. Optimize. Simulate.**
+**LUNARIS - Plan. Optimize. Simulate.**
