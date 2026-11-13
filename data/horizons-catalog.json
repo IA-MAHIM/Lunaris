@@ -1,0 +1,1 @@
+{"schema":"lunaris-horizons-v1","generated":null,"source":"JPL Horizons","note":"No NASA samples bundled; run scripts/fetch_horizons.py locally for JPL calculations. Demo falls back to labeled approximation.","series":{}}
