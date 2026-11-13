@@ -1,4 +1,4 @@
-# 🌕 LUNARIS — Lunar Mission Planning & Simulation
+# 🌕 LUNARIS - Lunar Mission Planning & Simulation
 
 **NASA Space Apps Challenge 2026 | Team CodexGalaxy**
 
