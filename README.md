@@ -1,4 +1,4 @@
-# LUNARIS — Lunar Mission Navigator
+# LUNARIS - Lunar Mission Navigator
 
 **NASA Space Apps Challenge 2026 · Lunar Landing Site Navigator**  
 **Team CodexGalaxy · IUBAT, Dhaka, Bangladesh**  
