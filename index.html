@@ -46,9 +46,9 @@
 <div class="section-heading"><div><span class="section-kicker">01 / MISSION CONTROL</span><h2>Choose your lunar landing site</h2><p>Start with an existing mission site or enter any lunar coordinate. Then choose a date and analyze your mission.</p></div><span class="data-badge" id="engineBadge">◇ ANALYTIC ESTIMATE</span></div>
 <div class="planner-grid">
 <div class="panel globe-panel">
-<div class="panel-heading"><div><span class="panel-pretitle">LUNAR ORBITAL VISUALIZATION</span><h3>Interactive Moon</h3></div><span class="panel-pill">DRAG TO ROTATE · SCROLL TO ZOOM</span></div>
-<div class="globe-stage" id="globeStage"><canvas aria-label="Interactive three-dimensional Moon model" id="moonCanvas"></canvas><canvas aria-label="Click a visible site marker to select a location" id="moonOverlay"></canvas><div class="globe-edge-label edge-top">NORTH ↑ <b>IAU MOON</b></div><div class="globe-edge-label edge-bottom">ORIENTATION VIEW <b>VISUAL MODEL</b></div><button class="globe-reset" id="resetView" title="Reset lunar globe camera">⌖ Reset view</button></div>
-<div class="globe-footer"><span><i class="legend-dot legend-selected"></i> Selected site</span><span><i class="legend-dot legend-site"></i> Reference site</span><span class="subtle-text">Textured globe • not a LOLA DEM</span></div>
+<div class="panel-heading"><div><span class="panel-pretitle">LUNAR ORBITAL VISUALIZATION</span><h3>Interactive Moon</h3></div><span class="panel-pill">AUTO-CENTER ON SELECT · DRAG TO ROTATE</span></div>
+<div class="globe-stage" id="globeStage"><canvas aria-label="Interactive three-dimensional Moon model" id="moonCanvas"></canvas><canvas aria-label="Click a visible site marker to select a location" id="moonOverlay"></canvas><div class="globe-edge-label edge-top">NORTH ↑ <b>IAU MOON</b></div><div class="globe-edge-label edge-bottom">ORIENTATION VIEW <b>VISUAL MODEL</b></div><button class="globe-reset" id="resetView" title="Recenter the selected landing site">⌖ Center site</button></div>
+<div class="globe-footer"><span><i class="legend-dot legend-selected"></i> Selected site</span><span><i class="legend-dot legend-site"></i> Reference site</span><span class="subtle-text">Selecting a site recenters the globe · illustrative texture</span></div>
 </div>
 <div class="panel control-panel">
 <div class="panel-heading"><div><span class="panel-pretitle">SET YOUR PARAMETERS</span><h3>Mission Configuration</h3></div><span class="step-pill">STEP 01</span></div>
@@ -104,6 +104,6 @@
 </div>
 </div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script src="app.js" type="module"></script>
+<script src="app.js?v=site-center-20261113" type="module"></script>
 <noscript><div class="noscript">JavaScript is required to run the interactive LUNARIS mission planner.</div></noscript></body>
 </html>

@@ -24,14 +24,48 @@ function sphere(rows=70,cols=140){const pos=[],norm=[],uv=[],idx=[];
  pos.push(x,y,z);norm.push(x,y,z);uv.push(j/cols, i/rows);
  }}for(let i=0;i<rows;i++)for(let j=0;j<cols;j++){const a=i*(cols+1)+j,b=a+cols+1;idx.push(a,a+1,b,b,a+1,b+1)}
  return {pos,norm,uv,idx};}
-function rotation(pitch,yaw){const a=Math.cos(pitch),b=Math.sin(pitch),c=Math.cos(yaw),d=Math.sin(yaw);
- // yaw(Y) multiplied by pitch(X); in column-major layout
- return new Float32Array([c, 0, -d, 0, d*b, a, c*b, 0, d*a, -b, c*a, 0, 0,0,0,1]); }
-function rotatePoint(v,pitch,yaw){const a=Math.cos(pitch),b=Math.sin(pitch),c=Math.cos(yaw),d=Math.sin(yaw);
- const x=v[0],y=a*v[1]-b*v[2],z=b*v[1]+a*v[2];return [c*x+d*z,y,-d*x+c*z];}
+// The globe orientation is a unit quaternion, mapping lunar coordinates to camera space.
+// Rotating toward a site uses its exact lat/lon, and keeps local north pointing up.
+const qUnit = q => {const d=Math.hypot(...q)||1;return q.map(v=>v/d);};
+const qMul = (a,b) => [
+ a[0]*b[0]-a[1]*b[1]-a[2]*b[2]-a[3]*b[3],
+ a[0]*b[1]+a[1]*b[0]+a[2]*b[3]-a[3]*b[2],
+ a[0]*b[2]-a[1]*b[3]+a[2]*b[0]+a[3]*b[1],
+ a[0]*b[3]+a[1]*b[2]-a[2]*b[1]+a[3]*b[0]
+];
+function qAxis(axis,rad){const half=rad/2, sn=Math.sin(half);return [Math.cos(half),axis[0]*sn,axis[1]*sn,axis[2]*sn];}
+function qRotate(v,q){
+ const [w,x,y,z]=q, px=v[0],py=v[1],pz=v[2];
+ const tx=2*(y*pz-z*py),ty=2*(z*px-x*pz),tz=2*(x*py-y*px);
+ return [px+w*tx+(y*tz-z*ty),py+w*ty+(z*tx-x*tz),pz+w*tz+(x*ty-y*tx)];
+}
+function qMatrix(q){
+ const [w,x,y,z]=q;
+ return new Float32Array([
+ 1-2*(y*y+z*z),2*(x*y+z*w),2*(x*z-y*w),0,
+ 2*(x*y-z*w),1-2*(x*x+z*z),2*(y*z+x*w),0,
+ 2*(x*z+y*w),2*(y*z-x*w),1-2*(x*x+y*y),0,
+ 0,0,0,1
+ ]);
+}
+function qSlerp(a,b,t){
+ let bb=b.slice(),dot=a.reduce((sum,v,i)=>sum+v*b[i],0);
+ if(dot<0){bb=bb.map(v=>-v);dot=-dot;}
+ if(dot>0.9995)return qUnit(a.map((v,i)=>v+(bb[i]-v)*t));
+ const theta=Math.acos(Math.min(1,dot)),s=Math.sin(theta);
+ const c1=Math.sin((1-t)*theta)/s,c2=Math.sin(t*theta)/s;
+ return qUnit(a.map((v,i)=>v*c1+bb[i]*c2));
+}
+function centerOnSite(s){
+ // Moon mesh coordinates are x=cos(lat)sin(lon), y=sin(lat), z=cos(lat)cos(lon).
+ // Yaw by -longitude, then pitch by +latitude: selected site => (0,0,+1),
+ // local lunar north => (0,+1,0). Works on lunar near and far sides.
+ const lat=Number(s.lat)*Math.PI/180, lon=Number(s.lon)*Math.PI/180;
+ return qUnit(qMul(qAxis([1,0,0],lat),qAxis([0,1,0],-lon)));
+}
 export function makeMoon(canvas,overlay,textureURL,siteClicked){
  let gl=null;try{gl=canvas.getContext('webgl',{antialias:true,alpha:true,preserveDrawingBuffer:true});}catch{}
- const ctx=overlay.getContext('2d');let pitch=-1.04,yaw=.2,zoom=.82,sites=[],selected=null,drag=false,startX=0,startY=0,lastX=0,lastY=0,lastT=0;
+ const ctx=overlay.getContext('2d');let orientation=centerOnSite({lat:-89.5,lon:0}),zoom=.82,sites=[],selected=null,drag=false,startX=0,startY=0,lastX=0,lastY=0,focusFrame=null;
  if(gl){
   const p=gl.createProgram();gl.attachShader(p,shader(gl,gl.VERTEX_SHADER,vs));gl.attachShader(p,shader(gl,gl.FRAGMENT_SHADER,fs));gl.linkProgram(p);gl.useProgram(p);
   const geo=sphere();const indices=new Uint16Array(geo.idx);
@@ -65,7 +99,7 @@ export function makeMoon(canvas,overlay,textureURL,siteClicked){
   im.src=textureURL;
   gl.uniform1i(gl.getUniformLocation(p,'uTexture'),0);
   gl.uniform3f(gl.getUniformLocation(p,'uLight'),-.65,.4,1.2);
-  var drawGl=()=>{gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);gl.useProgram(p);gl.uniformMatrix4fv(gl.getUniformLocation(p,'uTransform'),false,rotation(pitch,yaw));gl.uniform1f(gl.getUniformLocation(p,'uZoom'),zoom);gl.uniform2f(gl.getUniformLocation(p,'uAspect'),Math.min(1,canvas.height/canvas.width),Math.min(1,canvas.width/canvas.height));gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_SHORT,0);};
+  var drawGl=()=>{gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);gl.useProgram(p);gl.uniformMatrix4fv(gl.getUniformLocation(p,'uTransform'),false,qMatrix(orientation));gl.uniform1f(gl.getUniformLocation(p,'uZoom'),zoom);gl.uniform2f(gl.getUniformLocation(p,'uAspect'),Math.min(1,canvas.height/canvas.width),Math.min(1,canvas.width/canvas.height));gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_SHORT,0);};
  } else {
   // Software-rendered, draggable 3D Moon for browsers/devices where WebGL is disabled.
   // This is still a genuine sphere projection with latitude/longitude texture lookup,
@@ -95,7 +129,7 @@ export function makeMoon(canvas,overlay,textureURL,siteClicked){
     return;
    }
    const pixels=surface.createImageData(w,h),data=pixels.data;
-   const a=Math.cos(pitch),b=Math.sin(pitch),c=Math.cos(yaw),d=Math.sin(yaw);
+   const inverse=[orientation[0],-orientation[1],-orientation[2],-orientation[3]];
    const x0=Math.max(0,Math.floor(cx-r-1)),x1=Math.min(w,Math.ceil(cx+r+1));
    const y0=Math.max(0,Math.floor(cy-r-1)),y1=Math.min(h,Math.ceil(cy+r+1));
    for(let y=y0;y<y1;y++){
@@ -104,9 +138,7 @@ export function makeMoon(canvas,overlay,textureURL,siteClicked){
      const nx=((x+.5)-cx)/r, distance=nx*nx+ny*ny;
      if(distance>1)continue;
      const nz=Math.sqrt(1-distance);
-     // Inverse transform: view-space normal back into the Moon's texture frame.
-     const px=c*nx-d*nz,py=ny,pz=d*nx+c*nz;
-     const qx=px,qy=a*py+b*pz,qz=-b*py+a*pz;
+     const [qx,qy,qz]=qRotate([nx,ny,nz],inverse);
      const lon=Math.atan2(qx,qz),lat=Math.asin(Math.max(-1,Math.min(1,qy)));
      const tx=Math.min(texW-1,Math.max(0,Math.floor((lon/(2*Math.PI)+.5)*texW)));
      const ty=Math.min(texH-1,Math.max(0,Math.floor((.5-lat/Math.PI)*texH)));
@@ -129,7 +161,7 @@ export function makeMoon(canvas,overlay,textureURL,siteClicked){
  for(let i=1;i<=3;i++){ctx.beginPath();ctx.ellipse(0,0,dim*zoom/2+i*16,dim*zoom/2+i*16,0,0,Math.PI*2);ctx.stroke();}
  ctx.beginPath();ctx.moveTo(-w/2+20,0);ctx.lineTo(w/2-20,0);ctx.moveTo(0,-h/2+20);ctx.lineTo(0,h/2-20);ctx.setLineDash([3,12]);ctx.stroke();ctx.setLineDash([]);
  locs=[];
- for(const s of sites){const q=rotatePoint(point(s.lat,s.lon),pitch,yaw);if(q[2]<0.03)continue;
+ for(const s of sites){const q=qRotate(point(s.lat,s.lon),orientation);if(q[2]<0.03)continue;
  const x=q[0]*dim*zoom/2,y=-q[1]*dim*zoom/2;locs.push({...s,x,y});const active=selected?.id===s.id;
  ctx.strokeStyle=active?'#7df9df':'#ffce75';ctx.fillStyle=active?'#7df9df':'#ffce75';ctx.lineWidth=1.6;
  ctx.beginPath();ctx.arc(x,y,active?11:6,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(x,y,active?4:2.8,0,Math.PI*2);ctx.fill();
@@ -139,10 +171,58 @@ export function makeMoon(canvas,overlay,textureURL,siteClicked){
  function resize(){const rect=canvas.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));overlay.width=canvas.width;overlay.height=canvas.height;ctx.setTransform(1,0,0,1,0,0);draw();}
  function draw(){drawGl();drawOverlay();}
  const coord=e=>{const r=overlay.getBoundingClientRect();return [(e.clientX-r.left)*overlay.width/r.width-overlay.width/2,(e.clientY-r.top)*overlay.height/r.height-overlay.height/2]};
- overlay.addEventListener('pointerdown',e=>{drag=true;[startX,startY]=coord(e);lastX=startX;lastY=startY;lastT=Date.now();overlay.setPointerCapture(e.pointerId)});
- overlay.addEventListener('pointermove',e=>{if(!drag)return;const [x,y]=coord(e);const d=Math.min(overlay.width,overlay.height);yaw+=(x-lastX)*3/d;pitch=Math.max(-1.55,Math.min(1.55,pitch+(y-lastY)*3/d));lastX=x;lastY=y;draw();});
- overlay.addEventListener('pointerup',e=>{if(!drag)return;drag=false;const [x,y]=coord(e);if(Math.hypot(x-startX,y-startY)<8){let closest=null,best=18*(devicePixelRatio||1);for(const s of locs){const dist=Math.hypot(s.x-x,s.y-y);if(dist<best){best=dist;closest=s;}}if(closest)siteClicked?.(closest.id);}});
+ function cancelFocus(){if(focusFrame!==null){cancelAnimationFrame(focusFrame);focusFrame=null;}}
+ function focusSite(site,animated=true){
+  if(!site)return;
+  cancelFocus();
+  const destination=centerOnSite(site);
+  const from=orientation.slice();
+  // The site must remain centered even when the Moon initially shows its far side.
+  // Animate only when the view has an onscreen size, respecting reduced motion.
+  const visible=overlay.getBoundingClientRect().width>1;
+  const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if(!animated||reduceMotion||!visible){orientation=destination;draw();return;}
+  const started=performance.now(),duration=780;
+  const frame=now=>{
+   const t=Math.min(1,(now-started)/duration);
+   const ease=t*t*(3-2*t);
+   orientation=qSlerp(from,destination,ease);
+   draw();
+   if(t<1)focusFrame=requestAnimationFrame(frame);
+   else{orientation=destination;focusFrame=null;draw();}
+  };
+  focusFrame=requestAnimationFrame(frame);
+ }
+ overlay.style.touchAction='none';
+ overlay.addEventListener('pointerdown',e=>{cancelFocus();drag=true;[startX,startY]=coord(e);lastX=startX;lastY=startY;overlay.setPointerCapture(e.pointerId)});
+ overlay.addEventListener('pointermove',e=>{
+  if(!drag)return;
+  const [x,y]=coord(e),d=Math.min(overlay.width,overlay.height)||1;
+  const dx=(x-lastX)*3/d,dy=(y-lastY)*3/d;
+  orientation=qUnit(qMul(qAxis([0,1,0],dx),qMul(qAxis([1,0,0],dy),orientation)));
+  lastX=x;lastY=y;draw();
+ });
+ overlay.addEventListener('pointerup',e=>{
+  if(!drag)return;drag=false;
+  const [x,y]=coord(e);
+  if(Math.hypot(x-startX,y-startY)<8){
+   let closest=null,best=18*Math.min(devicePixelRatio||1,2);
+   for(const s of locs){const dist=Math.hypot(s.x-x,s.y-y);if(dist<best){best=dist;closest=s;}}
+   if(closest)siteClicked?.(closest.id);
+  }
+ });
+ overlay.addEventListener('pointercancel',()=>{drag=false;});
  overlay.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.55,Math.min(1.12,zoom+(e.deltaY<0?.045:-.045)));draw();},{passive:false});
  window.addEventListener('resize',resize);new ResizeObserver(resize).observe(canvas);
- return {setSites(a){sites=a;draw();},select(s){selected=s;draw();},focus(){pitch=-1.04;yaw=.2;zoom=.82;draw();},draw, getAngles(){return {pitch,yaw,zoom}},resize};
+ return {
+  setSites(a){sites=a;draw();},
+  select(s){selected=s;focusSite(s,true);},
+  focus(){zoom=.82;focusSite(selected||{lat:-89.5,lon:0},true);},
+  draw,
+  getAngles(){return {orientation:orientation.slice(),zoom}},
+  resize,
+  // Diagnostic utility to confirm the selected location lands at pixel-center.
+  selectedScreenPoint(){if(!selected)return null;const v=qRotate(point(selected.lat,selected.lon),orientation);return {x:v[0],y:v[1],front:v[2]};}
+ };
+
 }

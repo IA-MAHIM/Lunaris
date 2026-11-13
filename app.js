@@ -1,5 +1,5 @@
 import { SITES, RAD, clamp, wrap180, conditions, buildTimeline, findNextEvent, optimize, signedDeg, formatUTC } from './physics.js';
-import { makeMoon } from './moon3d.js';
+import { makeMoon } from './moon3d.js?v=site-center-20261113';
 
 const $ = id => document.getElementById(id);
 const app = {
